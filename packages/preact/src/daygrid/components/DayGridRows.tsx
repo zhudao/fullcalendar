@@ -174,7 +174,6 @@ export class DayGridRows extends DateComponent<DayGridRowsProps, DayGridRowsStat
             className={classNames.offscreen}
             attrs={{
               'aria-hidden': true,
-              inert: '',
             }}
           />
         )}
@@ -187,6 +186,9 @@ export class DayGridRows extends DateComponent<DayGridRowsProps, DayGridRowsStat
     this.disconnectMoreLinkHeight = undefined
 
     if (el) {
+      // set imperatively. React 19 treats inert as boolean, older React as string
+      el.inert = true
+
       this.disconnectMoreLinkHeight = watchHeight(el, (height) => {
         if (this._isUnmounting) return
         this.setState({ moreLinkHeight: height })
@@ -219,7 +221,7 @@ export class DayGridRows extends DateComponent<DayGridRowsProps, DayGridRowsStat
   // Hit System
   // -----------------------------------------------------------------------------------------------
 
-  queryHit(isRtl: boolean, positionLeft: number, positionTop: number, elWidth: number): Hit {
+  queryHit(isRtl: boolean, positionLeft: number, positionTop: number, elWidth: number): Hit | null {
     const { props } = this
 
     const colCount = props.cellRows[0].length
@@ -236,6 +238,11 @@ export class DayGridRows extends DateComponent<DayGridRowsProps, DayGridRowsStat
       this.rowHeightRefMap.current,
     )
     const cell = props.cellRows[row][col]
+
+    if (cell.isInert) {
+      return null
+    }
+
     const cellStartDate = cell.date
     const cellEndDate = addDays(cellStartDate, 1)
 
